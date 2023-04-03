@@ -51,6 +51,8 @@ rm_train --devices "0,1,2,3" \
 --valid_data data/helpful-base/test.jsonl,data/helpful-online/test.jsonl,data/helpful-rejection-sampled/test.jsonl
 ```
 
+- Alternatively, you can use `scripts/rm_train.sh` for more customized settings
+
 ### Notes
 - Default model is gpt2-xl(1.5B) and the loss is binary cross entropy.
 - Deepspeed config is in `configs/ds_config.yaml` where you can set your preferred distributed setting. Default is set to Zero-2 Parallelism.
