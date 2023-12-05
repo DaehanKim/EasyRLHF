@@ -1,13 +1,14 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 # EasyRLHF
-EasyRLHF aims to providing an easy and minimal interface to train RLHF LMs, using off-the-shelf solutions and datasets (i.e. HF Trainer, HF Datasets, Deepspeed, trl, peft and whatnot).
+EasyRLHF aims to provide an easy and minimal interface to train aligned language models, using off-the-shelf solutions and datasets (i.e. HF Trainer, HF Datasets, Deepspeed, trl).
 
-## Workflow
-As shown in [InstructGPT paper](https://arxiv.org/abs/2203.02155), we can train a reward model and reinforce a language model to follow human instructions better. We can first train reward model and SFT-LM with hh-rlhf dataset and self-instruct dataset respectively. Then PPO-LM can be trained with trl and peft library.
+Following sections will cover rough concepts of alignment methods(RLHF, RRHF, DPO, IPO) and provide how to run examples.
+
+## RLHF Overview
+As shown in [InstructGPT paper](https://arxiv.org/abs/2203.02155), we can train a reward model and reinforce a language model to follow human instructions better. We can first train reward model and SFT-LM with `hh-rlhf` dataset and `slimorca-dedup` dataset respectively. Then PPO-LM can be trained with trl library.
 
 ![workflow](assets/workflow.PNG)
-
 
 
 ### Train a Reward Model
@@ -16,15 +17,13 @@ we need pairwise comparison dataset to train a reward model. In the InstructGPT 
 
 ### Train a SFT(supervised finetuned) model (WIP)
 
-We can train SFT model with standard next-token-prediction using [self-instruct dataset](https://github.com/yizhongw/self-instruct/tree/main/data). 
+We can train SFT model with standard next-token-prediction using [slimorca-dedup](https://huggingface.co/datasets/Open-Orca/SlimOrca-Dedup). 
 
 ### Train a PPO model (WIP)
 
-Now that we have a reward model and a SFT model, we can do reinforcement learning with off-the-shelf RL packages designed for language models (e.g. trl, trlx and RL4LMs). We use [trl](https://github.com/lvwerra/trl) and [peft](https://github.com/huggingface/peft) to reinforce the SFT model with parameter efficient manner(LoRA). 
+Now that we have a reward model and a SFT model, we can do reinforcement learning with off-the-shelf RL packages designed for language models. We use [trl](https://github.com/lvwerra/trl)to reinforce the SFT model. In PPO stage, we keep copy of SFT model for reference. This reference model allows behavior model to learn to increase human preference while avoiding reward hacking. Specifically, behavior model first generates a completion given prompt. Token distributions are kept close to reference model via minimising KL-divergence against reference model's token distribution. A completion is fed to reward model to get a reward score. KL term and reward score are summed and regarded as a reward for PPO algorithm.
 
-----
-
-## Quickstart
+### Quickstart
 
 - Prepare virtual environment (optional)
 
@@ -60,13 +59,29 @@ rm_train --devices "0,1,2,3" \
   - [x] basic reward model training
   - [ ] basic SFT model training
   - [ ] basic PPO model training
-  - [ ] language expansion using translated datasets
+
+## RRHF Overview
+
+TBD 
+
+## DPO Overview 
+
+TBD
+
+## IPO Overview
+
+TBD
+
+----
 
 ## References
 - [InstructGPT paper](https://arxiv.org/abs/2203.02155)
 - [trl](https://github.com/lvwerra/trl)
 - [hh-rlhf](https://github.com/anthropics/hh-rlhf)
-- [self-instruct](https://github.com/yizhongw/self-instruct/tree/main/data)
+- [slimorca-dedup](https://huggingface.co/datasets/Open-Orca/SlimOrca-Dedup)
+- [RRHF](https://arxiv.org/abs/2304.05302)
+- [DPO](https://arxiv.org/abs/2305.18290)
+- [IPO](https://arxiv.org/abs/2310.12036#deepmind)
 
 ## License
 
