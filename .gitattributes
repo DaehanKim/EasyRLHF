@@ -3,3 +3,5 @@ data/helpful-online/test.jsonl.gz filter=lfs diff=lfs merge=lfs -text
 data/helpful-online/train.jsonl.gz filter=lfs diff=lfs merge=lfs -text
 data/helpful-rejection-sampled/test.jsonl.gz filter=lfs diff=lfs merge=lfs -text
 data/helpful-rejection-sampled/train.jsonl.gz filter=lfs diff=lfs merge=lfs -text
+data/harmless-base/ filter=lfs diff=lfs merge=lfs -text
+data/helpful-base filter=lfs diff=lfs merge=lfs -text
