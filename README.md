@@ -5,6 +5,10 @@ EasyRLHF aims to provide an easy and minimal interface to train aligned language
 
 Following sections will cover rough concepts of alignment methods(RLHF, RRHF, DPO, IPO) and provide how to run examples.
 
+## Common Notations
+
+$x$ is a prompt, $y_w$ is better continuation and $y_l$ is worse continuation and $\pi$ (or $\rho$, $\mu$), $\pi_{ref}$ are behavior, reference model respectively. $\mathcal{D}$ is dataset distribution.
+
 ## RLHF Overview
 As shown in [InstructGPT paper](https://arxiv.org/abs/2203.02155), we can train a reward model and reinforce a language model to follow human instructions better. We can first train reward model and SFT-LM with `hh-rlhf` dataset and `slimorca-dedup` dataset respectively. Then PPO-LM can be trained with trl library.
 
@@ -22,6 +26,19 @@ We can train SFT model with standard next-token-prediction using [slimorca-dedup
 ### Train a PPO model (WIP)
 
 Now that we have a reward model and a SFT model, we can do reinforcement learning with off-the-shelf RL packages designed for language models. We use [trl](https://github.com/lvwerra/trl)to reinforce the SFT model. In PPO stage, we keep copy of SFT model for reference. This reference model allows behavior model to learn to increase human preference while avoiding reward hacking. Specifically, behavior model first generates a completion given prompt. Token distributions are kept close to reference model via minimising KL-divergence against reference model's token distribution. A completion is fed to reward model to get a reward score. KL term and reward score are summed and regarded as a reward for PPO algorithm.
+
+Here's what we maximise: 
+
+$$
+
+J(\pi) = \mathbb{E}_\pi[r(x,y)] - \tau D_{KL}(\pi || \pi_{ref})
+
+$$
+where
+
+$$
+D_{KL}(\pi || \pi_{ref}) = \mathbb{E}_{y \sim \pi(\cdot | x)} \left[\log \left( \frac{\pi(y|x)}{\pi_{ref}(y|x)} \right) \right]
+$$
 
 ### Quickstart
 
@@ -46,8 +63,9 @@ cd data
 find . -name '*.gz' -print0 | xargs -0 gzip -d
 rm_train --devices "0,1,2,3" \
 --output_dir "outputs/my-model" \
---train_data data/helpful-base/train.jsonl,data/helpful-online/train.jsonl,data/helpful-rejection-sampled/train.jsonl \
---valid_data data/helpful-base/test.jsonl,data/helpful-online/test.jsonl,data/helpful-rejection-sampled/test.jsonl
+--master_port 50000 \
+--train_file data/helpful-base/train.jsonl,data/helpful-online/train.jsonl,data/helpful-rejection-sampled/train.jsonl \
+--valid_file data/helpful-base/test.jsonl,data/helpful-online/test.jsonl,data/helpful-rejection-sampled/test.jsonl
 ```
 
 - Alternatively, you can use `scripts/rm_train.sh` for more customized settings
@@ -60,18 +78,35 @@ rm_train --devices "0,1,2,3" \
   - [ ] basic SFT model training
   - [ ] basic PPO model training
 
-## RRHF Overview
-
-TBD 
-
 ## DPO Overview 
 
-TBD
+DPO avoids training a reward model and directly optimizes RLHF objective with respect to output vocab distribution. Here's what we optimize : 
+
+$$
+\min_\pi \mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}} \left[ -\log \sigma \left( \tau \log \left(\frac{\pi(y_w | x)}{\pi(y_l | x)} \right)  - \tau \log \left(\frac{\pi_{ref}(y_w | x)}{\pi_{ref}(y_l | x)} \right) \right) \right]
+$$
 
 ## IPO Overview
 
 TBD
 
+## RRHF Overview
+
+RRHF stands for "rank responses from human feedback". The gist of this method is to align response probability towards human preference. More specifically, let's say we have k different responses $y_i$ of x sampled by policy $\rho_i$ $(1 \le i \le k)$. $R(x, y_i) = r_i$ is each response's reward score(or rank). We can optimise following loss:
+
+$$
+\mathcal{L} = \sum_{r_i < r_j} \max(0, p_i - p_j) - \sum_t \log P_\pi(y_{i', t} | x, y_{i', <t})
+$$
+
+where $y_{i'}$ indicates a response with highest score and
+
+$$
+p_i = \frac{\sum_t \log P_\pi(y_{i,t} | x, y_{i, <t})} {||y_i||}
+$$
+
+is a length-normalized log probability.
+
+Note that this method doesn't require scalar reward values but just a relative order of responses.
 ----
 
 ## References
