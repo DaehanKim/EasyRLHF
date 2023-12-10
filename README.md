@@ -79,7 +79,9 @@ rm_train --devices "0,1,2,3" \
 
 ## DPO Overview 
 
-DPO avoids training a reward model and directly optimizes RLHF objective with respect to output vocab distribution. Here's what we optimize : 
+DPO(Direct Preference Optimization) avoids training a reward model and directly optimizes RLHF objective with respect to output vocab distribution. 
+
+Here's what we optimize : 
 
 ```math
 \min_\pi \mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}} \left[ -\log \sigma \left( \tau \log \left(\frac{\pi(y_w | x)}{\pi(y_l | x)} \right)  - \tau \log \left(\frac{\pi_{ref}(y_w | x)}{\pi_{ref}(y_l | x)} \right) \right) \right]
@@ -87,7 +89,30 @@ DPO avoids training a reward model and directly optimizes RLHF objective with re
 
 ## IPO Overview
 
-TBD
+IPO(Identity Preference Optimization) is a simple variant of $\Psi$ PO from paper ["A General Theoretical Paradigm to Understand Learning from Human Preference"](https://arxiv.org/abs/2310.12036#deepmind) which generalize RLHF and DPO methods.
+
+$\Psi$ PO objective is following : 
+
+```math
+\max_\pi \mathbb{E}_{x \sim \rho \\ y \sim \pi(\cdot | x) \\ y' \sim \mu(\cdot | x)} [ \Psi(p^\ast (y \gt y' | x)) ] - \tau D_{KL}(\pi || \pi_{ref})
+```
+
+where $\Psi(\cdot) : [0,1] \rightarrow \mathbb{R}$ is a non-decreasing function.
+
+Here they set $\Psi = I$ and called this variant IPO. 
+This method also bypasses building reward model like DPO while showing better generalization for out-of-distribution data sampled from behavior policy.
+Above Loss can be represented in preference-pair level :
+
+```math
+\mathbb{E}_{(y_w, y_l, x) \sim \mathcal{D}} \left[ \left( h_\pi(y_w, y_l, x) - \frac{\tau^{-1}}{2} \right)^2 \right]
+```
+
+where
+
+```math
+h_\pi (y, y', x) = \log \left( \frac{\pi(y|x) \pi_{ref}(y'|x)}{ \pi(y'|x) \pi_{ref}(y|x)} \right)
+```
+
 
 ## RRHF Overview
 
@@ -120,7 +145,9 @@ Note that this method doesn't require scalar reward values but just a relative o
 - [DPO](https://arxiv.org/abs/2305.18290)
 - [IPO](https://arxiv.org/abs/2310.12036#deepmind)
 
-## License
+## Acknowledgement & License
+
+This project is supported by [TRC Program](https://sites.research.google/trc/about/).
 
 This project just binds libraries and datasets from various sources, so is under license terms of corresponding sources. 
 Binding script itself is licensed MIT.
