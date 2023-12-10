@@ -67,7 +67,8 @@ rm_train --devices "0,1,2,3" \
 --valid_file data/helpful-base/test.jsonl,data/helpful-online/test.jsonl,data/helpful-rejection-sampled/test.jsonl
 ```
 
-- Alternatively, you can use `scripts/rm_train.sh` for more customized settings
+- Alternatively, you can use `scripts/gpu_rm_train.sh` for more customized settings
+- Use `scripts/tpu_rm_train.sh` for TPUs. `rm_train` cmd is not supported for TPUs.
 
 ### Notes
 - Default model is gpt2-xl(1.5B) and the loss is binary cross entropy.

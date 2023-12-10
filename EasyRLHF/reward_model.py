@@ -166,7 +166,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="gpt2-xl",
+        default="microsoft/phi-1_5",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },
@@ -342,11 +342,12 @@ def main():
                 "valid": data_args.valid_file.split(","),
             },
         )
-        all_data = all_data.map(data_tokenize)
+        all_data = all_data.map(data_tokenize, num_proc=10)
         # filter out sequences that is > max_seq_length
         all_data = all_data.filter(
             lambda e: e["win_length"] < data_args.max_seq_length
-            and e["lose_length"] < data_args.max_seq_length
+            and e["lose_length"] < data_args.max_seq_length,
+            num_proc = 5
         )
 
     reward_model.config.pad_token_id = (
@@ -357,7 +358,7 @@ def main():
         model=reward_model,
         args=training_args,
         data_collator=DataCollatorForRMTraining(
-            tokenizer, max_length=data_args.max_seq_length
+            tokenizer, max_length=data_args.max_seq_length, padding='max_length'
         ),
         train_dataset=train_data,
         eval_dataset=valid_data,

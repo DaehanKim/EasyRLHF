@@ -1,10 +1,10 @@
 #!/bin/bash
 WANDB_PROJECT="easy-rlhf" \
 TOKENIZERS_PARALLELISM="false" \
-CUDA_VISIBLE_DEVICES=4,5,6,7 \
+CUDA_VISIBLE_DEVICES="4,5,6,7" \
 deepspeed --master_port $1 --module EasyRLHF.reward_model \
---model_name_or_path "gpt2-xl" \
---output_dir "outputs/rm-gpt2xl-bsz32-filter1024-eos-data_all-bcewlogitsloss-resume" \
+--model_name_or_path "gpt2-large" \
+--output_dir "outputs/rm-gpt2l-bsz32-filter1024-eos-data_all-bcewlogitsloss-resume" \
 --train_file "data/helpful-base/train.jsonl,data/helpful-online/train.jsonl,data/helpful-rejection-sampled/train.jsonl" \
 --valid_file "data/helpful-base/test.jsonl,data/helpful-online/test.jsonl,data/helpful-rejection-sampled/test.jsonl" \
 --do_train 1 \
@@ -21,7 +21,6 @@ deepspeed --master_port $1 --module EasyRLHF.reward_model \
 --logging_steps 20 \
 --max_seq_length 1024 \
 --report_to wandb \
---run_name rm-gpt2xl-bsz32-filter1024-eos-data_all-bcewlogitsloss \
+--run_name rm-gpt2l-bsz32-filter1024-eos-data_all-bcewlogitsloss \
 --learning_rate 1e-5 \
---deepspeed configs/ds_config.json \
---resume /workspace/EasyRLHF/outputs/rm-gpt2xl-bsz32-filter1024-eos-data_all-bcewlogitsloss/checkpoint-5500
+--deepspeed "configs/ds_config.json"
