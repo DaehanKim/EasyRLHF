@@ -18,6 +18,8 @@ setup(
         "accelerate",
         "torch",
         "wandb",
+        "trl",
+        "peft"
     ],
     entry_points={
         "console_scripts": [

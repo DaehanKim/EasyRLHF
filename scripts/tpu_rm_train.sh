@@ -5,9 +5,10 @@ WANDB_PROJECT="easy-rlhf" \
 TOKENIZERS_PARALLELISM="false" \
 PJRT_SELECT_DEFAULT_DEVICE=0 \
 PJRT_DEVICE=TPU \
-python xla_spawn.py reward_model.py \
---model_name_or_path "gpt2-large" \
---output_dir "../outputs/rm-gpt2l-bsz8-filter1024-eos-data_all-bcewlogitsloss-resume" \
+TCMALLOC_LARGE_ALLOC_REPORT_THRESHOLD=27374182400 \
+python xla_spawn.py --num_cores=8 reward_model.py \
+--model_name_or_path "gpt2-medium" \
+--output_dir "../outputs/rm-gpt2m-bsz8-filter1024-eos-data_all-bcewlogitsloss-resume" \
 --train_file "../data/helpful-base/train.jsonl,../data/helpful-online/train.jsonl,../data/helpful-rejection-sampled/train.jsonl" \
 --valid_file "../data/helpful-base/test.jsonl,../data/helpful-online/test.jsonl,../data/helpful-rejection-sampled/test.jsonl" \
 --do_train 1 \
@@ -25,6 +26,7 @@ python xla_spawn.py reward_model.py \
 --logging_steps 1 \
 --max_seq_length 1024 \
 --report_to wandb \
---run_name rm-gpt2l-bsz8-filter1024-eos-data_all-bcewlogitsloss-resume \
+--run_name rm-gpt2m-bsz8-filter1024-eos-data_all-bcewlogitsloss-resume \
 --learning_rate 1e-5 \
---deepspeed "../configs/ds_config.json"
+--deepspeed ../configs/tpu_ds_config.json
+
